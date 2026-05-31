@@ -17,7 +17,6 @@ public:
   TokenType type_;
   std::string timestamp_;
   sjtu::vector<std::string> value_;
-  std::string prefix_;
 };
 
 #endif

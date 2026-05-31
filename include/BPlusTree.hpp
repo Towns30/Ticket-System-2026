@@ -40,7 +40,7 @@ public:
   };
 
 private:
-  static constexpr int maxSize = 120;
+  static constexpr int maxSize = (4096 - 5 * sizeof(int)) / (sizeof(KeyValue) + sizeof(int)) - 1;
   static constexpr int minSize = (maxSize + 1) / 2;
 
   struct Node

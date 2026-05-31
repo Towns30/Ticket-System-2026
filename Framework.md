@@ -12,7 +12,7 @@
 
 - users.txt
 
-- -  存储所有用户的信息，包括 (userInfoID(MermoryRiver维护的)) username, password, name, mailAddr, priviilege
+- -  存储所有用户的信息，包括 (userInfoID(MermoryRiver维护的)) username, password, name, mailAddr, privilege
 
 - orders.txt
 
