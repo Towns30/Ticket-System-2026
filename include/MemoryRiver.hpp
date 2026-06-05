@@ -24,6 +24,29 @@ public:
 
   MemoryRiver(const string &file_name_) : file_name_(file_name_) {}
 
+  void Clean()
+  {
+    file_.close();
+    file_.open(file_name_, std::ios::out);
+    file_.close();
+    file_.open(file_name_, std::ios::in | std::ios::out | std::ios::binary);
+    int tmp = -1;
+    for (int i = 0; i < info_len - 1; ++i)
+    {
+        file_.write(reinterpret_cast<char *>(&tmp), sizeof(int));
+    }
+    int init_count = 0;
+    file_.write(reinterpret_cast<char *>(&init_count), sizeof(int));
+    file_.close();
+    file_.open(file_name_, std::ios::in | std::ios::out | std::ios::binary);
+    count_ = 0;
+  }
+
+  bool Empty()
+  {
+    return (count_ == 0);
+  }
+
   void Initialise(string FN = "")
   {
     if (FN != "")

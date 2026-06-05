@@ -40,11 +40,11 @@ public:
   }
   OrderManager(const OrderManager &) = delete;
   OrderManager &operator=(const OrderManager &) = delete;
-  void BuyTicket(int timestamp, char64 username, char64 trainID, Date date,
+  void BuyTicket(char64 username, char64 trainID, Date date,
                  int num, char64 from, char64 to, bool allow_pending = false);
-  void RefundTicket(int timestamp, char64 username, int order_pos = 1);
-  void QueryOrder(int timestamp, char64 username);
-  void Clean(int timestamp);
+  void RefundTicket(char64 username, int order_pos = 1);
+  void QueryOrder(char64 username);
+  void Clean();
 };
 
 #endif

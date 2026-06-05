@@ -40,20 +40,20 @@ public:
   }
   TrainManager(const TrainManager &) = delete;
   TrainManager &operator=(const TrainManager &) = delete;
-  void AddTrain(int timestamp, TrainInfo train_info);
-  void QueryTrainInfo(int timestamp, char64 trainID, Date date);
-  void QueryTicket(int timestamp, char64 from, char64 to, Date date,
+  void AddTrain(TrainInfo train_info);
+  void QueryTrainInfo(char64 trainID, Date date);
+  void QueryTicket(char64 from, char64 to, Date date,
                    SortBy sort_by);
-  void QueryTransfer(int timestamp, char64 from, char64 to, Date date,
+  void QueryTransfer(char64 from, char64 to, Date date,
                      SortBy sort_by);
   void
   ModifyTrainInfo(char64 trainID, Date date, int from_idx, int to_idx,
                   int seat_num,
                   int dir); // date represents the start day of the train,
                                // dir = 1 means plus, dir = -1 means minus
-  void ReleaseTrain(int timestamp, char64 trainID);
-  void DeleteTrain(int timestamp, char64 trainID);
-  void Clean(int timestamp);
+  void ReleaseTrain(char64 trainID);
+  void DeleteTrain(char64 trainID);
+  void Clean();
 };
 
 #endif

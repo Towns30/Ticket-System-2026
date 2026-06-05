@@ -25,7 +25,7 @@ pending or refunded), trainID, d_start(对应列车始发站日期), from, leavi
 
 - - 当我们讲A到B的映射时，指A是互不相同的，而当我们讲维护二元组(A, B)时，往往是A可重复，但(A, B)整体不重复，本质上我们是在维护(A, B)到0的映射，不过第一种可以看作第二种的一个特例，所以如果B占的空间不大（往往B是一个数据文件的索引），我们可以只维护第二类BPT
 
-- username-userInfo.txt
+- username-userInfoID.txt
 
 - - 用BPT维护从username到 userInfoID的映射, 再通过userInfoID取出对应userInfo
 
@@ -65,7 +65,7 @@ pending or refunded), trainID, d_start(对应列车始发站日期), from, leavi
 
 - - - 实现为全局单例UserManager
 
-- - 功能：维护users.txt, username-userInfo.txt，并负责维护和存储登录池，支持对用户信息的查询，添加，修改，
+- - 功能：维护users.txt, username-userInfoID.txt，并负责维护和存储登录池，支持对用户信息的查询，添加，修改，
 
 - - 暴露接口：QueryUserInfo(), AddUserInfo(), ModifyUserInfo(), Login(), Logout(), IsLogin(), QueryPrivilege()
 

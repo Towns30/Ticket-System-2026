@@ -32,6 +32,7 @@ void Parser::ParseLine(const sjtu::vector<Token> &tokens)
 {
   int timestamp = Utils::StringToInt(tokens[0].value_[0]);
   std::string opt = tokens[1].value_[0];
+  std::cout << '[' << timestamp << "] ";
   if (opt == "add_user")
   {
     char64 cur_username;
@@ -42,7 +43,7 @@ void Parser::ParseLine(const sjtu::vector<Token> &tokens)
     Utils::StringToChar64(GetPrefixValue(tokens, "-n"), user_info.name_);
     Utils::StringToChar64(GetPrefixValue(tokens, "-m"), user_info.mail_addr_);
     user_info.privilege_ = Utils::StringToInt(GetPrefixValue(tokens, "-g"));
-    UserManager::getInstance().AddUserInfo(timestamp, cur_username, user_info);
+    UserManager::getInstance().AddUserInfo(cur_username, user_info);
   }
   else if (opt == "login")
   {
@@ -50,13 +51,13 @@ void Parser::ParseLine(const sjtu::vector<Token> &tokens)
     Utils::StringToChar64(GetPrefixValue(tokens, "-u"), username);
     char64 password;
     Utils::StringToChar64(GetPrefixValue(tokens, "-p"), password);
-    UserManager::getInstance().Login(timestamp, username, password);
+    UserManager::getInstance().Login(username, password);
   }
   else if (opt == "logout")
   {
     char64 username;
     Utils::StringToChar64(GetPrefixValue(tokens, "-u"), username);
-    UserManager::getInstance().Logout(timestamp, username);
+    UserManager::getInstance().Logout(username);
   }
   else if (opt == "query_profile")
   {
@@ -64,7 +65,7 @@ void Parser::ParseLine(const sjtu::vector<Token> &tokens)
     Utils::StringToChar64(GetPrefixValue(tokens, "-c"), cur_username);
     char64 username;
     Utils::StringToChar64(GetPrefixValue(tokens, "-u"), username);
-    UserManager::getInstance().QueryUserInfo(timestamp, cur_username, username);
+    UserManager::getInstance().QueryUserInfo(cur_username, username);
   }
   else if (opt == "modify_profile")
   {
@@ -92,7 +93,7 @@ void Parser::ParseLine(const sjtu::vector<Token> &tokens)
         modify_info.privilege_ = Utils::StringToInt(tokens[i + 1].value_[0]);
       }
     }
-    UserManager::getInstance().ModifyUserInfo(timestamp, cur_username, username,
+    UserManager::getInstance().ModifyUserInfo(cur_username, username,
                                               modify_info);
   }
   else if (opt == "add_train")
@@ -136,26 +137,26 @@ void Parser::ParseLine(const sjtu::vector<Token> &tokens)
         train_info.res_seat_nums[i][j] = train_info.seat_num_;
       }
     }
-    TrainManager::getInstance().AddTrain(timestamp, train_info);
+    TrainManager::getInstance().AddTrain(train_info);
   }
   else if (opt == "delete_train")
   {
     char64 trainID;
     Utils::StringToChar64(GetPrefixValue(tokens, "-i"), trainID);
-    TrainManager::getInstance().DeleteTrain(timestamp, trainID);
+    TrainManager::getInstance().DeleteTrain(trainID);
   }
   else if (opt == "release_train")
   {
     char64 trainID;
     Utils::StringToChar64(GetPrefixValue(tokens, "-i"), trainID);
-    TrainManager::getInstance().ReleaseTrain(timestamp, trainID);
+    TrainManager::getInstance().ReleaseTrain(trainID);
   }
   else if (opt == "query_train")
   {
     char64 trainID;
     Utils::StringToChar64(GetPrefixValue(tokens, "-i"), trainID);
     Date date(GetPrefixValue(tokens, "-d"));
-    TrainManager::getInstance().QueryTrainInfo(timestamp, trainID, date);
+    TrainManager::getInstance().QueryTrainInfo(trainID, date);
   }
   else if (opt == "query_ticket")
   {
@@ -173,7 +174,7 @@ void Parser::ParseLine(const sjtu::vector<Token> &tokens)
     {
       sort_by = SortBy::TIME;
     }
-    TrainManager::getInstance().QueryTicket(timestamp, from, to, date, sort_by);
+    TrainManager::getInstance().QueryTicket(from, to, date, sort_by);
   }
   else if (opt == "query_transfer")
   {
@@ -191,7 +192,7 @@ void Parser::ParseLine(const sjtu::vector<Token> &tokens)
     {
       sort_by = SortBy::TIME;
     }
-    TrainManager::getInstance().QueryTransfer(timestamp, from, to, date,
+    TrainManager::getInstance().QueryTransfer(from, to, date,
                                               sort_by);
   }
   else if (opt == "buy_ticket")
@@ -215,14 +216,14 @@ void Parser::ParseLine(const sjtu::vector<Token> &tokens)
     {
       allow_pending = false;
     }
-    OrderManager::getInstance().BuyTicket(timestamp, username, trainID, date,
+    OrderManager::getInstance().BuyTicket(username, trainID, date,
                                           num, from, to, allow_pending);
   }
   else if (opt == "query_order")
   {
     char64 username;
     Utils::StringToChar64(GetPrefixValue(tokens, "-u"), username);
-    OrderManager::getInstance().QueryOrder(timestamp, username);
+    OrderManager::getInstance().QueryOrder(username);
   }
   else if (opt == "refund_ticket")
   {
@@ -233,16 +234,19 @@ void Parser::ParseLine(const sjtu::vector<Token> &tokens)
     {
       order_pos = Utils::StringToInt(GetPrefixValue(tokens, "-n"));
     }
-    OrderManager::getInstance().RefundTicket(timestamp, username, order_pos);
+    OrderManager::getInstance().RefundTicket(username, order_pos);
   }
   else if (opt == "clean")
   {
-    UserManager::getInstance().Clean(timestamp);
-    TrainManager::getInstance().Clean(timestamp);
-    OrderManager::getInstance().Clean(timestamp);
+    UserManager::getInstance().Clean();
+    TrainManager::getInstance().Clean();
+    OrderManager::getInstance().Clean();
+    std::cout << "0\n";
   }
   else if (opt == "exit")
   {
+    UserManager::getInstance().CleanLogin();
+    std::cout << "bye\n";
     exit(0);
   }
 }

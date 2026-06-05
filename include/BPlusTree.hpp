@@ -34,13 +34,14 @@ public:
     bool operator>=(const KeyValue &other) const { return !(*this < other); }
     friend std::ostream &operator<<(std::ostream &os, const KeyValue &key_value)
     {
-      os << key_value.key_;
+      os << key_value.key_ << ',' << key_value.value_;
       return os;
     }
   };
 
 private:
-  static constexpr int maxSize = (4096 - 5 * sizeof(int)) / (sizeof(KeyValue) + sizeof(int)) - 1;
+  static constexpr int maxSize =
+      (4096 - 5 * sizeof(int)) / (sizeof(KeyValue) + sizeof(int)) - 1;
   static constexpr int minSize = (maxSize + 1) / 2;
 
   struct Node
@@ -604,10 +605,11 @@ public:
   BPlusTree() = default;
   BPlusTree(std::string filename) { io_.Initialise(filename); }
   ~BPlusTree() = default;
+  void Clean() { io_.Clean(); }
   bool Find(KeyType key,
-            KeyValue &key_value) // return false if not found, return true if
-                                 // found, and the result is restored in
-                                 // key_value(by quoting)
+            ValueType &value) // return false if not found, return true if
+                              // found, and the result is restored in
+                              // value(by quoting)
   {
     int root;
     io_.GetInfo(root, 1);
@@ -625,7 +627,7 @@ public:
       {
         return false;
       }
-      io_.Read(now_node, now_node.childs[pos]);
+      io_.Read(now_node, now_node.childs_[pos]);
     }
     // now_node is leaf node
     int tar_pos =
@@ -636,13 +638,13 @@ public:
     }
     if (now_node.key_value_[tar_pos].key_ == key)
     {
-      key_value = now_node.key_value_[tar_pos];
+      value = now_node.key_value_[tar_pos].value_;
       return true;
     }
     return false;
   }
   sjtu::vector<KeyValue> IntervalFind(KeyType key1,
-                    KeyType key2) // find key in [key1, key2]
+                                      KeyType key2) // find key in [key1, key2]
   {
     // std::cerr << "key1: " << key1 << "  key2: " << key2 << '\n';
     int root;
@@ -705,13 +707,13 @@ public:
   }
   void Insert(KeyType key, ValueType value)
   {
+    // std::cerr << "we need to insert {" << key << ", " << value << "}\n";
     int root;
     io_.GetInfo(root, 1);
-
     if (root == -1) // empty tree
     {
       int child = -1;
-      KeyValue key_value(key);
+      KeyValue key_value(key, value);
       Node node(1, 1, -1, -1, -1, &key_value, &child); // leaf node
       root = io_.Write(node);
       // update root
@@ -902,35 +904,47 @@ public:
   //     }
   //   }
   // }
-  // bool PrintNode(Node node, int pos)
-  // {
-  //   std::cerr << "pos: " << pos << '\n';
-  //   std::cerr << "type: " << ((node.type_ == 1) ? "leaf node" : "index node")
-  //             << '\n';
-  //   std::cerr << "size: " << node.size_ << '\n';
-  //   std::cerr << "father: " << node.father_ << '\n';
-  //   std::cerr << "left: " << node.left_ << '\n';
-  //   std::cerr << "right: " << node.right_ << '\n';
-  //   for (int i = 0; i <= node.size_ - 1; i++)
-  //   {
-  //     std::cerr << "key_value[" << i << "] = {" << node.key_value_[i].key_
-  //               << "}  ";
-  //   }
-  //   std::cerr << '\n';
-  //   for (int i = 0; i <= node.size_ - 1; i++)
-  //   {
-  //     std::cerr << "childs[" << i << "] = " << node.childs_[i] << "  ";
-  //   }
-  //   std::cerr << "\n\n";
-  //   if (node.type_ == 1)
-  //   {
-  //     return false;
-  //   }
-  //   else
-  //   {
-  //     return true;
-  //   }
-  // }
+  void PrintAllValues()
+  {
+    int now;
+    Node node;
+    io_.GetInfo(now, 2);
+    while (now != -1)
+    {
+      io_.Read(node, now);
+      PrintNode(node, now);
+      now = node.right_;
+    }
+  }
+  void PrintNode(Node node, int pos)
+  {
+    // std::cerr << "pos: " << pos << '\n';
+    // std::cerr << "type: " << ((node.type_ == 1) ? "leaf node" : "index node")
+    //           << '\n';
+    // std::cerr << "size: " << node.size_ << '\n';
+    // std::cerr << "father: " << node.father_ << '\n';
+    // std::cerr << "left: " << node.left_ << '\n';
+    // std::cerr << "right: " << node.right_ << '\n';
+    for (int i = 0; i <= node.size_ - 1; i++)
+    {
+      std::cerr << "key_value[" << i << "] = {" << node.key_value_[i]
+                << "}  ";
+    }
+    std::cerr << '\n';
+    // for (int i = 0; i <= node.size_ - 1; i++)
+    // {
+    //   std::cerr << "childs[" << i << "] = " << node.childs_[i] << "  ";
+    // }
+    // std::cerr << "\n\n";
+    // if (node.type_ == 1)
+    // {
+    //   return false;
+    // }
+    // else
+    // {
+    //   return true;
+    // }
+  }
 };
 
 #endif // B_PLUS_TREE_HPP
