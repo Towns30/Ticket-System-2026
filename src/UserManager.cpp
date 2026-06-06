@@ -76,7 +76,8 @@ void UserManager::QueryUserInfo(char64 cur_username, char64 username)
     std::cout << "-1" << '\n';
     return;
   }
-  if (std::strcmp(cur_username, username) && cur_privilege <= user_info.privilege_)
+  if (std::strcmp(cur_username, username) &&
+      cur_privilege <= user_info.privilege_)
   {
     std::cout << "-1" << '\n';
     return;
@@ -126,6 +127,10 @@ void UserManager::ModifyUserInfo(char64 cur_username, char64 username,
   int cur_privilege;
   if (!GetPrivilegeFromLogin(cur_username, cur_privilege)) // cur未登录
   {
+    // if (!std::strcmp(cur_username, "EeQkrciqcUmFzgx"))
+    // {
+    //   std::cerr << "cur未登录\n";
+    // }
     std::cout << "-1" << '\n';
     return;
   }
@@ -133,18 +138,30 @@ void UserManager::ModifyUserInfo(char64 cur_username, char64 username,
   int userinfoID;
   if (!GetUserInfo(username, user_info, userinfoID)) // username不存在，没法修改
   {
+    // if (!std::strcmp(cur_username, "EeQkrciqcUmFzgx"))
+    // {
+    //   std::cerr << "username不存在，没法修改\n";
+    // }
     std::cout << "-1" << '\n';
     return;
   }
   if (user_info.privilege_ >= cur_privilege &&
-      cur_username != username) // -u权限>=-c权限且不是“自己改自己”
+      std::strcmp(cur_username,username)) // -u权限>=-c权限且不是“自己改自己”
   {
+    // if (!std::strcmp(cur_username, "EeQkrciqcUmFzgx"))
+    // {
+    //   std::cerr << "-u权限>=-c权限且不是“自己改自己”\n";
+    // }
     std::cout << "-1" << '\n';
     return;
   }
   if (modify_info.privilege_ != -1 &&
       modify_info.privilege_ >= cur_privilege) // -g权限>=-c权限
   {
+    // if (!std::strcmp(cur_username, "EeQkrciqcUmFzgx"))
+    // {
+    //   std::cerr << "-g权限>=-c权限\n";
+    // }
     std::cout << "-1" << '\n';
     return;
   }

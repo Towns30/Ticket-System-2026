@@ -28,6 +28,32 @@ struct TrainInfo
       [100]
       [100]; // res[i][j]表示从发售日期开始的第i天，列车在下标i站出发时剩余座位数
   bool is_released_;
+  friend std::ostream &operator<<(std::ostream &os, TrainInfo &t)
+  {
+    os << "trainID: " << t.trainID_ << '\n'
+       << "station_num: " << t.station_num_ << '\n'
+       << "seat_num: " << t.seat_num_ << '\n'
+       << "stations: ";
+    for (int i = 0; i < t.station_num_; i++)
+      os << t.stations_[i] << ' ';
+    os << '\n' << "total_prices: ";
+    for (int i = 0; i < t.station_num_; i++)
+      os << t.total_prices_[i] << ' ';
+    os << '\n'
+       << "start_time: " << t.start_time_.ToString() << '\n'
+       << "arrive_times: ";
+    for (int i = 0; i < t.station_num_; i++)
+      os << t.arrive_times_[i] << ' ';
+    os << '\n' << "leaving_times: ";
+    for (int i = 0; i < t.station_num_; i++)
+      os << t.leaving_times_[i] << ' ';
+    os << '\n'
+       << "sale: " << t.start_sale_date_.ToString() << " ~ "
+       << t.end_sale_date_.ToString() << '\n'
+       << "type: " << t.type_ << '\n'
+       << "released: " << t.is_released_ << '\n';
+    return os;
+  }
 };
 struct TicketResult
 {

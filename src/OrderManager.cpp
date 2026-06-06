@@ -174,6 +174,16 @@ void OrderManager::BuyTicket(char64 username, char64 trainID, Date date,
       break;
     }
   }
+  // if(!std::strcmp(from, "甘肃省兰州市") && !std::strcmp(to, "天津市"))
+  // {
+  //   std::cerr << "flag_f = " << flag_f << " flag_t = " << flag_t << '\n';
+  //   std::cerr << train_info;
+  // }
+  if (pos_f >= pos_t)
+  {
+    std::cout << "-1\n";
+    return;
+  }
   if (!flag_f || !flag_t) // 无from或tos
   {
     // std::cout << "y\n";
@@ -334,7 +344,8 @@ void OrderManager::RefundTicket(char64 username,
     int train_infoID;
     TrainManager::getInstance().GetTrainInfo(order_info.trainID_, train_info,
                                              train_infoID);
-    // std::cerr << "[REFUND] order=" << order_infoID << " num=" << order_info.num_
+    // std::cerr << "[REFUND] order=" << order_infoID << " num=" <<
+    // order_info.num_
     //           << " day=" << order_info.day_pos_ << " seg4seat="
     //           << train_info.res_seat_nums[order_info.day_pos_][4] << '\n';
 

@@ -365,8 +365,14 @@ void TrainManager::QueryTransfer(char64 from, char64 to, Date date,
       }
       for (int train_infoID_2 : train_infoIDs_2_vec) // 遍历第二个列车车次
       {
+
         TrainInfo train_info_2;
         train_info_mr_.Read(train_info_2, train_infoID_2);
+        if (!std::strcmp(train_info_1.trainID_,
+                         train_info_2.trainID_)) // 同一列车不算换乘
+        {
+          continue;
+        }
         // 找两下标pos_trans_2, pos_to
         int pos_trans_2 = 0;
         int pos_to = 0;
