@@ -15,18 +15,18 @@ struct TrainInfo
 {
   char64 trainID_;
   int station_num_;
-  char64 stations_[100];
+  char64 stations_[50];
   int seat_num_;
-  int total_prices_[100]; // 从始发站坐到每一站的总价
+  int total_prices_[50]; // 从始发站坐到每一站的总价
   HourMinite start_time_;
-  int arrive_times_[100]; // 从始发站出发至到达每个站所用分钟数
-  int leaving_times_[100]; // 从始发站出发至从每个站出发所用分钟数
+  int arrive_times_[50]; // 从始发站出发至到达每个站所用分钟数
+  int leaving_times_[50]; // 从始发站出发至从每个站出发所用分钟数
   Date start_sale_date_;
   Date end_sale_date_;
   char type_;
   int res_seat_nums
       [100]
-      [100]; // res[i][j]表示从发售日期开始的第i天，列车在下标i站出发时剩余座位数
+      [50]; // res[i][j]表示从发售日期开始的第i天，列车在下标i站出发时剩余座位数
   bool is_released_;
   friend std::ostream &operator<<(std::ostream &os, TrainInfo &t)
   {
