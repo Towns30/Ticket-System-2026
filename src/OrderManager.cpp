@@ -148,6 +148,11 @@ void OrderManager::BuyTicket(char64 username, char64 trainID, Date date,
     std::cout << "-1\n";
     return;
   }
+  if (num > train_info.seat_num_) // 购买量超出容量
+  {
+    std::cout << "-1\n";
+    return;
+  }
   if (train_info.is_released_ == false) // 车次未发布
   {
     // std::cout << "r\n";
