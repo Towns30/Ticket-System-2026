@@ -74,7 +74,7 @@ void Parser::ParseLine(const sjtu::vector<Token> &tokens)
     char64 username;
     Utils::StringToChar64(GetPrefixValue(tokens, "-u"), username);
     UserModifyInfo modify_info;
-    for (int i = 2; i <= tokens.size() - 1; i += 2)
+    for (int i = 2; i < tokens.size(); i += 2)
     {
       if (tokens[i].value_[0] == "-p")
       {
@@ -103,25 +103,55 @@ void Parser::ParseLine(const sjtu::vector<Token> &tokens)
     train_info.station_num_ = Utils::StringToInt(GetPrefixValue(tokens, "-n"));
     train_info.seat_num_ = Utils::StringToInt(GetPrefixValue(tokens, "-m"));
     sjtu::vector<std::string> tmp = GetPrefixValues(tokens, "-s");
-    for (int i = 0; i <= tmp.size() - 1; i++)
+    for (int i = 0; i < tmp.size(); i++)
     {
       Utils::StringToChar64(tmp[i], train_info.stations_[i]);
     }
     tmp = GetPrefixValues(tokens, "-p");
-    for (int i = 0; i <= tmp.size() - 1; i++)
+    train_info.total_prices_[0] = 0; // 始发站坐到始发站不用钱
+    for (int i = 1; i <= tmp.size(); i++)
     {
-      train_info.prices_[i] = Utils::StringToInt(tmp[i]);
+      if (i == 1)
+      {
+        train_info.total_prices_[i] = Utils::StringToInt(tmp[i - 1]);
+      }
+      else
+      {
+        train_info.total_prices_[i] =
+            Utils::StringToInt(tmp[i - 1]) + train_info.total_prices_[i - 1];
+      }
     }
     train_info.start_time_ = HourMinite(GetPrefixValue(tokens, "-x"));
     tmp = GetPrefixValues(tokens, "-t");
-    for (int i = 0; i <= tmp.size() - 1; i++)
+    int travel_times_[100], stopover_times_[100];
+    for (int i = 0; i < tmp.size(); i++)
     {
-      train_info.travel_times_[i] = Utils::StringToInt(tmp[i]);
+      travel_times_[i] = Utils::StringToInt(tmp[i]);
     }
     tmp = GetPrefixValues(tokens, "-o");
-    for (int i = 0; i <= tmp.size() - 1; i++)
+    if (tmp.size() == 1 && tmp[0] == "_")
     {
-      train_info.stopover_times_[i] = Utils::StringToInt(tmp[i]);
+      stopover_times_[0] = 0; // 两站火车无停站时间
+    }
+    else
+    {
+      for (int i = 0; i < tmp.size(); i++)
+        stopover_times_[i] = Utils::StringToInt(tmp[i]);
+    }
+
+    train_info.arrive_times_[0] = 0; // 始发站到达时间不使用，设为0
+    train_info.leaving_times_[0] = 0; // 始发站出发时间为0
+    train_info.leaving_times_[train_info.station_num_ - 1] =
+        0; // 终点站出发时间不使用，设为0
+    for (int i = 1; i < train_info.station_num_; i++)
+    {
+      train_info.arrive_times_[i] =
+          train_info.leaving_times_[i - 1] + travel_times_[i - 1];
+      if (i != train_info.station_num_ - 1)
+      {
+        train_info.leaving_times_[i] =
+            train_info.arrive_times_[i] + stopover_times_[i - 1];
+      }
     }
     tmp = GetPrefixValues(tokens, "-d");
     train_info.start_sale_date_ = Date(tmp[0]);
@@ -132,7 +162,7 @@ void Parser::ParseLine(const sjtu::vector<Token> &tokens)
                              train_info.start_sale_date_);
          i++)
     {
-      for (int j = 0; j <= train_info.station_num_ - 1; j++)
+      for (int j = 0; j < train_info.station_num_; j++)
       {
         train_info.res_seat_nums[i][j] = train_info.seat_num_;
       }
@@ -192,8 +222,7 @@ void Parser::ParseLine(const sjtu::vector<Token> &tokens)
     {
       sort_by = SortBy::TIME;
     }
-    TrainManager::getInstance().QueryTransfer(from, to, date,
-                                              sort_by);
+    TrainManager::getInstance().QueryTransfer(from, to, date, sort_by);
   }
   else if (opt == "buy_ticket")
   {
@@ -216,8 +245,8 @@ void Parser::ParseLine(const sjtu::vector<Token> &tokens)
     {
       allow_pending = false;
     }
-    OrderManager::getInstance().BuyTicket(username, trainID, date,
-                                          num, from, to, allow_pending);
+    OrderManager::getInstance().BuyTicket(username, trainID, date, num, from,
+                                          to, allow_pending);
   }
   else if (opt == "query_order")
   {

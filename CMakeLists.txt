@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 include_directories("${PROJECT_SORCE_DIR}/include")
 
-add_executable(program
+add_executable(code 
     src/main.cpp
     src/Lexer.cpp
     src/Parser.cpp

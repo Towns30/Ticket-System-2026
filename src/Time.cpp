@@ -63,15 +63,19 @@ void AccurateTime::Normalize()
     month_ += 1;
   }
 }
-void AccurateTime::AddMinites(const int &min)
+AccurateTime AccurateTime::AddMinites(const int &min)
 {
-  minite_ += min;
-  Normalize();
+  AccurateTime at = *this;
+  at.minite_ += min;
+  at.Normalize();
+  return at;
 }
-void AccurateTime::AddDays(const int &day)
+AccurateTime AccurateTime::AddDays(const int &day)
 {
-  day_ += day;
-  Normalize();
+  AccurateTime at = *this;
+  at.day_ += day;
+  at.Normalize();
+  return at;
 }
 Date AccurateTime::GetDate() { return Date{month_, day_}; }
 HourMinite AccurateTime::GetHourMinite() { return HourMinite{hour_, minite_}; }
@@ -80,7 +84,10 @@ std::string AccurateTime::ToString()
   return Utils::IntToString(month_) + '-' + Utils::IntToString(day_) + ' ' +
          Utils::IntToString(hour_) + ':' + Utils::IntToString(minite_);
 }
-
+int AccurateTime::ToTotalMinites()
+{
+  return GetDate().ToTotalDays() * 24 * 60 + GetHourMinite().ToMinites();
+}
 Date::Date() : month_(0), day_(0) {}
 Date::Date(const MonthType &month, const DayType &day)
     : month_(month), day_(day)
@@ -123,10 +130,12 @@ int Date::ToTotalDays() // start from 06-01
   return tmp_d;
 }
 
-void Date::AddDays(const int &day)
+Date Date::AddDays(const int &day)
 {
-  day_ += day;
-  Normalize();
+  Date da = *this;
+  da.day_ += day;
+  da.Normalize();
+  return da;
 }
 
 std::string Date::ToString()
@@ -181,10 +190,12 @@ HourMinite::HourMinite(const std::string &s)
   Normalize();
 }
 
-void HourMinite::AddMinites(const int &minite)
+HourMinite HourMinite::AddMinites(const int &minite)
 {
-  minite_ += minite;
-  Normalize();
+  HourMinite hm = *this;
+  hm.minite_ += minite;
+  hm.Normalize();
+  return hm;
 }
 
 int HourMinite::ToMinites() { return hour_ * 60 + minite_; }

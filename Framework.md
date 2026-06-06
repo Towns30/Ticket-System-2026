@@ -17,7 +17,7 @@
 - orders.txt
 
 - - 存储所有订单信息，每个订单信息包括 (orderInfoID(MermoryRiver维护的)) timestamp(订单创建的时间戳), username(归属用户), status(success or 
-pending or refunded), trainID, d_start(对应列车始发站日期), from, leaving_time, to, arriving_time, price, num
+pending or refunded), trainID, d_start(对应列车始发站日期), from, pos_from, leaving_time, to, pos_to, arriving_time, price, num
 
 #### 索引文件（帮助更好更快地找到对应数据）
 

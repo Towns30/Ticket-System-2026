@@ -31,13 +31,14 @@ public:
                const MiniteType &);
   AccurateTime(const Date &, const HourMinite &);
   AccurateTime(const std::string &);
-  void AddMinites(const int &);
-  void AddDays(const int &);
+  AccurateTime AddMinites(const int &);
+  AccurateTime AddDays(const int &);
   Date GetDate();
   HourMinite GetHourMinite();
   std::string ToString();
+  int ToTotalMinites();
 
-  bool operator<=>(const AccurateTime &) const = default;
+  auto operator<=>(const AccurateTime &) const = default;
 };
 
 class Date
@@ -56,10 +57,10 @@ public:
   Date(const MonthType &, const DayType &);
   Date(const std::string &);
   int DaysBetween(Date);
-  void AddDays(const int &);
+  Date AddDays(const int &);
   std::string ToString();
   int ToTotalDays();
-  bool operator<=>(const Date &) const = default;
+  auto operator<=>(const Date &) const = default;
 };
 
 class HourMinite
@@ -75,10 +76,10 @@ public:
   HourMinite();
   HourMinite(const HourType &, const MiniteType &);
   HourMinite(const std::string &);
-  void AddMinites(const int &);
+  HourMinite AddMinites(const int &);
   int ToMinites();
   std::string ToString();
-  bool operator<=>(const HourMinite &) const = default;
+  auto operator<=>(const HourMinite &) const = default;
 };
 
 #endif

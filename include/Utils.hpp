@@ -97,13 +97,18 @@ inline std::string IntToString(int a)
 {
   if (a == 0)
   {
-    return "0";
+    return "00";
   }
   std::string ans;
   while (a > 0)
   {
     ans = char(a % 10 + '0') + ans;
     a /= 10;
+  }
+  if(ans.size() == 1)
+  {
+    ans.push_back(ans[0]);
+    ans[0] = '0';
   }
   return ans;
 }

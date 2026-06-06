@@ -45,7 +45,6 @@ void UserManager::LogoutUser(char64 username)
 
 int UserManager::WriteUserInfo(UserInfo user_info)
 {
-  Utils::Char64Key username_k(user_info.username_);
   int user_infoID = user_info_mr_.Write(user_info);
   // std::cerr << "return: user_infoID:" << user_infoID << '\n';
   return user_infoID;
