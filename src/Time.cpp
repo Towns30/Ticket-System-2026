@@ -51,7 +51,7 @@ void AccurateTime::Normalize()
   minite_ = Utils::FloorRes(minite_, 60);
   day_ += Utils::FloorDiv(hour_, 24);
   hour_ = Utils::FloorRes(hour_, 24);
-  assert(month_ >= 6);
+  // assert(month_ >= 6);
   while (day_ <= 0)
   {
     month_ -= 1;
@@ -145,6 +145,7 @@ std::string Date::ToString()
 
 void Date::Normalize()
 {
+  // assert(month_ >= 6);
   while (day_ <= 0)
   {
     month_ -= 1;

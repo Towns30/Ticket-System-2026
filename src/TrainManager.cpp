@@ -213,7 +213,7 @@ void TrainManager::QueryTicket(char64 from, char64 to, Date date,
         int max_seat = 200000;
         for (int j = pos_f; j <= pos_t - 1; j++)
         {
-          // std::cout << "DEBUG Query: i=" << i << " seg=" << j 
+          // std::cout << "DEBUG Query: i=" << i << " seg=" << j
           // << " seat=" << train_info.res_seat_nums[i][j] << "\n";
           if (train_info.res_seat_nums[i][j] < max_seat)
           {
@@ -265,6 +265,7 @@ void TrainManager::QueryTicket(char64 from, char64 to, Date date,
 void TrainManager::QueryTransfer(char64 from, char64 to, Date date,
                                  SortBy sort_by)
 {
+  // std::cerr << "from = " << from << '\n';
   sjtu::priority_queue<TransferResult, CostCompare> pq_cost_whole;
   sjtu::priority_queue<TransferResult, TimeCompare> pq_time_whole;
   sjtu::vector<int> train_infoIDs_vec = QueryStationID(from);
@@ -278,14 +279,21 @@ void TrainManager::QueryTransfer(char64 from, char64 to, Date date,
     TrainInfo train_info_1;
     train_info_mr_.Read(train_info_1, train_infoID);
     int pos_f = 0;
+    // for (int i = 0; i <= train_info_1.station_num_ - 1; i++)
+    // {
+    //   std::cerr << train_info_1.stations_[i] << ' ';
+    // }
+    // std::cerr << '\n';
     for (int i = 0; i <= train_info_1.station_num_ - 1; i++)
     {
-      if (std::strcmp(train_info_1.stations_[i], from))
+      if (!std::strcmp(train_info_1.stations_[i], from))
       {
+        // std::cerr << "pos_f = " << i << '\n';
         pos_f = i;
         break;
       }
     }
+    // std::cout << pos_f << "\n";
     AccurateTime start_leaving_time_f = AccurateTime(
         train_info_1.start_sale_date_, train_info_1.start_time_.AddMinites(
                                            train_info_1.leaving_times_[pos_f]));
@@ -545,6 +553,7 @@ void TrainManager::DeleteTrain(char64 trainID)
   }
   DeleteFunctionTrainIDTrainInfoID(
       trainID); // 删除索引就相当于删除了这辆列车，因为找不到了
+  std::cout << "0\n";
 }
 void TrainManager::Clean()
 {

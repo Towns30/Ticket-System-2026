@@ -74,39 +74,53 @@ void OrderManager::PrintOrder(OrderInfo order_info)
             << ' ' << order_info.arriving_time_.ToString() << ' '
             << order_info.price_ << ' ' << order_info.num_ << '\n';
 }
-void OrderManager::DealWaitingList(Date date, TrainInfo train_info, int train_infoID) // date为这班列车的发车日期
+void OrderManager::DealWaitingList(Date date, TrainInfo train_info,
+                                   int train_infoID) // date为这班列车的发车日期
 {
-  sjtu::vector<int> order_infoIDs_vec = GetTrainIDDateOrderInfoIDs(train_info.trainID_, date);
-  for(int order_infoID : order_infoIDs_vec)
+  sjtu::vector<int> order_infoIDs_vec =
+      GetTrainIDDateOrderInfoIDs(train_info.trainID_, date);
+  for (int order_infoID : order_infoIDs_vec)
   {
     OrderInfo order_info;
     order_info_mr_.Read(order_info, order_infoID);
+    // std::cerr << "[DEAL] order=" << order_infoID << " num=" <<
+    // order_info.num_
+    //           << " day=" << order_info.day_pos_ << " seg4seat="
+    //           << train_info.res_seat_nums[order_info.day_pos_][4] << '\n';
+    if (order_info.status_ != OrderStatus::PENDING)
+    {
+      continue;
+    }
     // 检查座位是否够
     bool is_enough = true;
-    for(int pos = order_info.pos_f_; pos <= order_info.pos_t_ - 1; pos++)
+    for (int pos = order_info.pos_f_; pos <= order_info.pos_t_ - 1; pos++)
     {
-      if(train_info.res_seat_nums[order_info.day_pos_][pos] < order_info.num_)
+      if (train_info.res_seat_nums[order_info.day_pos_][pos] < order_info.num_)
       {
         is_enough = false;
         break;
       }
     }
-    if(!is_enough)
+    if (!is_enough)
     {
+
       continue;
     }
     // 可以买
     // 先更新座位
-    for(int pos = order_info.pos_f_; pos <= order_info.pos_t_ - 1; pos++)
+    for (int pos = order_info.pos_f_; pos <= order_info.pos_t_ - 1; pos++)
     {
       train_info.res_seat_nums[order_info.day_pos_][pos] -= order_info.num_;
     }
     // 再更新order状态
     order_info.status_ = OrderStatus::SUCCESS;
     order_info_mr_.Update(order_info, order_infoID);
-    // 更新train_info
-    TrainManager::getInstance().UpdateTrainInfo(train_info, train_infoID);
-  }
+    // 删除候补队列中此条
+    DeleteFunctionTrainIDDateOrderInfoIDs(train_info.trainID_, date,
+                                          order_infoID);
+
+  } // 更新train_info
+  TrainManager::getInstance().UpdateTrainInfo(train_info, train_infoID);
 }
 
 OrderManager::OrderManager()
@@ -189,8 +203,9 @@ void OrderManager::BuyTicket(char64 username, char64 trainID, Date date,
   for (int i = 0; i <= day_len; i++)
   {
     AccurateTime tmp_start_leaving_time_f = start_leaving_time_f;
-    // std::cout << "DEBUG Buy: day_pos=" << day_pos << " date=" << date.ToString() 
-    //       << " start_sale=" << train_info.start_sale_date_.ToString() 
+    // std::cout << "DEBUG Buy: day_pos=" << day_pos << " date=" <<
+    // date.ToString()
+    //       << " start_sale=" << train_info.start_sale_date_.ToString()
     //       << " res_seat_nums[" << day_pos << "][...] deducted\n";
     if (tmp_start_leaving_time_f.AddDays(i) >= AccurateTime(date, HourMinite()))
     {
@@ -240,7 +255,8 @@ void OrderManager::BuyTicket(char64 username, char64 trainID, Date date,
     int order_infoID = order_info_mr_.Write(order_info);
     // 更新用户订单映射
     AddFunctionUsernameOrderInfoIDs(username, order_infoID);
-    // std::cout << "price: " << order_info.price_ << "  num: " << order_info.num_ << '\n';
+    // std::cout << "price: " << order_info.price_ << "  num: " <<
+    // order_info.num_ << '\n';
     std::cout << order_info.price_ * order_info.num_ << '\n';
   }
   else
@@ -318,6 +334,10 @@ void OrderManager::RefundTicket(char64 username,
     int train_infoID;
     TrainManager::getInstance().GetTrainInfo(order_info.trainID_, train_info,
                                              train_infoID);
+    // std::cerr << "[REFUND] order=" << order_infoID << " num=" << order_info.num_
+    //           << " day=" << order_info.day_pos_ << " seg4seat="
+    //           << train_info.res_seat_nums[order_info.day_pos_][4] << '\n';
+
     for (int i = order_info.pos_f_; i <= order_info.pos_t_ - 1; i++)
     {
       train_info.res_seat_nums[order_info.day_pos_][i] += order_info.num_;
@@ -332,6 +352,11 @@ void OrderManager::RefundTicket(char64 username,
 }
 void OrderManager::QueryOrder(char64 username)
 {
+  if (!UserManager::getInstance().IsLogin(username)) // -u未登录
+  {
+    std::cout << "-1\n";
+    return;
+  }
   sjtu::vector<int> order_infoIDs_vec = GetUserOrderInfoIDs(username);
   std::cout << order_infoIDs_vec.size() << '\n';
   for (int i = order_infoIDs_vec.size() - 1; i >= 0; i--)
