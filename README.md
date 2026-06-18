@@ -6,7 +6,6 @@ SJTU CS1951 课程大作业
 
 ### 作业安排
 
-
 本作业分为两个部分。
 
 在第一部分中，需要实现一个基于文件的 B+ 树。
@@ -27,52 +26,70 @@ SJTU CS1951 课程大作业
 
 bonus 另外计算，计入平时分总分，且不超过总分的 1%。
 
-## B+ 树 - 7%
+## 系统架构
 
-### 作业要求
+### 存储设计
 
-作业要求实现基于 BPT 的外存管理系统。在本作业中，只允许调用以下头文件中的函数和类：
+#### 外存
 
-iostream, string, cstdio, cmath, string, fstream, filesystem
+##### 数据文件
 
-不允许使用这些头文件包含的 STL 容器 (如 `std::vector`) 或算法 (如 `std::sort`)。唯一的例外是，你可以使用 `std::string`。如果需要用到其他与算法、数据结构无关的标准库，请向助教提出请求。
+- **trains.txt**：存储所有火车的信息，包括 (trainInfoID(MemoryRiver 维护的)) trainID, stationNum, stations, seatNum, prices, startTime, travelTimes, stopoverTime, saleDate, type(这些是固定不变的)，resSeatNums(发车日期起每一天的每相邻两站剩余座位数)，state(是否已经被 release)
 
-你需要在最后通过 [OJ 测试](https://acm.sjtu.edu.cn/OnlineJudge/problem/3091)。
+- **users.txt**：存储所有用户的信息，包括 (userInfoID(MemoryRiver 维护的)) username, password, name, mailAddr, privilege
 
-注意：建议使用类模板以方便后续完成管理系统。
+- **orders.txt**：存储所有订单信息，每个订单信息包括 (orderInfoID(MemoryRiver 维护的)) username(归属用户), status(success / pending / refunded), trainID, d_start(对应列车始发站日期), from, leaving_time, to, arriving_time, price, num
 
-### 负责助教
+##### 索引文件（基于 B+ 树）
 
-张博钜 张煊 丁宣铭
+使用 BPT 维护以下映射，以加速数据检索：
 
-## 管理系统 - 8%
+- **username → userInfoID**：通过 username 快速找到 userInfoID，再取出对应 userInfo
+- **(username, orderInfoID)**：通过 username 和 orderInfoID 二元组定位订单，再取出对应 orderInfo
+- **trainID → trainInfoID**：通过 trainID 快速找到 trainInfoID，再取出对应 trainInfo
+- **(station, trainInfoID)**：维护 station 与 trainInfoID 的二元组，用于 query_ticket 和 query_transfer（仅对已 release 的 train）
+- **((trainID, date), orderInfoID)**：维护候补队列，按 (trainID, 始发站出发日期) 和候补 orderInfoID 二元组存储（仅对已 release 的 train）
+- **((station1, station2), trainInfoID)**：维护经过 station1 和 station2（station1 在 station2 之前）的列车，用于 query_ticket 和 query_transfer（仅对已 release 的 train）
 
-见 [管理系统文档](management_system.md)。
+#### 内存
 
-数据压缩包下发在群里。
+##### 登录池
 
-### 负责助教
-顾元熙，卓翔，楼灏，于恩帝
+- 存所有在线（已登录）的用户信息 (username, privilege)，用 BPT 维护从 username 到 privilege 的映射
 
+### 模块设计
 
-## Bonus
+- **UserManager 模块**
+  - 实现为全局单例 UserManager
+  - 功能：维护 users.txt、username-userInfoID 索引，并负责维护和存储登录池，支持对用户信息的查询、添加、修改
+  - 暴露接口：`QueryUserInfo()`, `AddUserInfo()`, `ModifyUserInfo()`, `Login()`, `Logout()`, `IsLogin()`, `QueryPrivilege()`
 
-见 [Bonus 文档](bonus.md)。
+- **TrainManager 模块**
+  - 实现为全局单例 TrainManager
+  - 功能：维护 trains.txt、trainID-trainInfoID 索引、station-trainInfoID 索引、(station1, station2)-trainInfoID 索引，支持对火车的查询、添加、修改、删除
+  - 暴露接口：`AddTrain()`, `QueryTrainInfo()`, `QueryTicket()`, `QueryTransfer()`, `ModifyTrainInfo()`, `ReleaseTrain()`, `DeleteTrain()`
 
-准备自行设计并实现其他 bonus 的同学可以联系助教协商。
+- **OrderManager 模块**
+  - 实现为全局单例 OrderManager
+  - 功能：维护 orders.txt、username-orderInfoID 索引、(trainID, date)-orderInfoID 索引，支持对订单的创建、订单状态的修改，以及候补队列的维护
+  - 暴露接口：`BuyTicket()`, `RefundTicket()`, `QueryOrder()`
 
-## 扣分
+- **Lexer 模块**
+  - 功能：将输入指令解析为 Token 序列（支持 `|` 分隔的多值参数），传给 Parser
+  - 暴露接口：`Tokenize()`
 
-请保证自己项目结构的可读性，可以包括优化项目结构、完善 README 的内容、适当的文件树指南等，晦涩难懂的项目可能会加大助教的工作量，也可能会影响你的成绩（B+ 树阶段此条可忽略）。
+- **Parser 模块**
+  - 功能：解析 Lexer 传入的 Token 序列，根据指令类型调用对应 Manager 接口，输出结果
+  - 暴露接口：`ParseLine()`
 
-**如有出现任何抄袭现象按 0 分计，并按照违反学术诚信的操作办法处理。**
+- **Time 模块**
+  - **Date 类**：日期加减、日期差运算
+  - **HourMinute 类**：时刻的加减和换算
+  - **AccurateTime 类**：将 Date 和 HourMinute 结合，表示绝对时间点
 
+### B+ 树 & 工具
 
-### 中期检查
-
-由于火车票后端设计难度较大，请同学们 **务必** 在设计好清晰的文件结构以及代码框架后再动手。
-为了督促同学们的完成进度，我们将在 **6月4日（星期四）** 进行一次中期检查，检查内容包含：
-- 仓库代码，要求建好各模块的文件，设计好基本的类（包含数据成员）以及几个基本的函数接口（要求有函数签名）
-- 口头回答对 `query_transfer` 的设计
-中期检查效果不理想的同学可能会被扣除5%以内的分数。
-  
+- **BPlusTree**：基于文件系统的 B+ 树模板，支持 Insert、Delete、Find、IntervalFind 操作
+- **MemoryRiver**：基于 fstream 的定长记录文件读写器，为 BPT 提供底层存储支持
+- **vector**：自行实现的动态数组，替代 std::vector
+- **priority_queue**：左偏堆实现的优先队列，用于 query_ticket 和 query_transfer 的排序
